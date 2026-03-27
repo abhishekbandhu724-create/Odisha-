@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Odisha | The Soul of India</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --gold: #FFB300; --accent: #FF5E00; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #05070A; color: #E2E8F0; scroll-behavior: smooth; overflow-x: hidden; }
+        .heading-font { font-family: 'Syne', sans-serif; }
+        
+        /* Glassmorphism Effects */
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); }
+        .glass-nav { background: rgba(5, 7, 10, 0.8); backdrop-filter: blur(20px); z-index: 1000; }
+        
+        /* Card Animations */
+        .dest-card { border-radius: 32px; transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1); position: relative; overflow: hidden; height: 100%; }
+        .dest-card:hover { transform: translateY(-12px) scale(1.02); border-color: var(--gold); box-shadow: 0 30px 60px -12px rgba(255, 179, 0, 0.2); }
+        
+        .hero-gradient { background: linear-gradient(to bottom, transparent, #05070A); }
+        .gold-text { background: linear-gradient(135deg, #FFD700, #FF8C00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Filters */
+        .chip { padding: 10px 24px; border-radius: 20px; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; white-space: nowrap; font-weight: 600; font-size: 0.85rem; }
+        .chip.active { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 179, 0, 0.4); }
+
+        .wish-active { color: #FF3B30 !important; }
+        #chat-box::-webkit-scrollbar { width: 4px; }
+        #chat-box::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <nav class="glass-nav fixed top-0 left-0 right-0 px-6 py-5">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-om text-black text-xl"></i>
+                </div>
+                <h1 class="heading-font text-2xl font-extrabold uppercase tracking-tighter">Explore <span class="gold-text">Odisha</span></h1>
+            </div>
+
+            <div class="flex items-center gap-3 w-full lg:w-auto">
+                <div class="relative flex-grow lg:w-80">
+                    <input type="text" id="search" onkeyup="render()" placeholder="Search 2026 Destinations..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-12 outline-none focus:border-yellow-500 transition">
+                    <i class="fa fa-search absolute left-4 top-4 text-gray-500"></i>
+                </div>
+                <button onclick="toggleWishlistOnly()" id="wishBtn" class="p-3 glass rounded-2xl hover:text-red-500 transition"><i class="fa-solid fa-heart"></i></button>
+                <button onclick="document.getElementById('conv-modal').classList.remove('hidden')" class="p-3 glass rounded-2xl"><i class="fa-solid fa-coins text-yellow-500"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="relative h-[70vh] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1920" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 hero-gradient"></div>
+        </div>
+        <div class="relative z-10 text-center px-6">
+            <h2 class="heading-font text-5xl md:text-7xl font-black mb-4 uppercase tracking-tighter">The Soul of <span class="gold-text">India</span></h2>
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg">20 ranked world-class destinations. From the architectural marvel of Konark to the serene waters of Chilika.</p>
+            <div class="mt-8 flex justify-center gap-4 flex-wrap" id="filter-container">
+                <div class="chip active" onclick="setFilter('all', this)">All Secrets</div>
+                <div class="chip" onclick="setFilter('spiritual', this)">Spiritual</div>
+                <div class="chip" onclick="setFilter('nature', this)">Nature</div>
+                <div class="chip" onclick="setFilter('historical', this)">Historical</div>
+                <div class="chip" onclick="setFilter('cultural', this)">Cultural</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-6 -mt-10 relative z-20">
+        <div class="glass p-5 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-500">
+                    <i class="fa-solid fa-location-arrow animate-pulse"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-white" id="gps-status">GPS Signal Pending...</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500">Live distance calculation enabled</p>
+                </div>
+            </div>
+            <button onclick="syncGPS()" class="bg-yellow-500 text-black px-6 py-3 rounded-2xl font-bold text-sm hover:scale-105 transition active:scale-95">SYNC LOCATION</button>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-6 py-20">
+        <div id="dest-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            </div>
+    </main>
+
+    <div id="conv-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[2000] hidden flex items-center justify-center p-6">
+        <div class="glass p-8 rounded-[40px] max-w-sm w-full border-yellow-500/30">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="heading-font text-2xl font-bold gold-text">Currency</h3>
+                <button onclick="document.getElementById('conv-modal').classList.add('hidden')"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">USD ($)</label>
+                    <input type="number" id="usd" oninput="convert(1)" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-yellow-500" placeholder="1.00">
+                </div>
+                <div class="text-center text-yellow-500"><i class="fa fa-arrows-rotate text-xl"></i></div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2">INR (₹)</label>
+                    <input type="number" id="inr" oninput="convert(2)" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-yellow-500" placeholder="83.50">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-8 right-8 z-[1000] flex flex-col items-end gap-4">
+        <div id="ai-window" class="hidden w-80 md:w-96 glass rounded-[32px] overflow-hidden shadow-2xl border-yellow-500/20">
+            <div class="bg-gradient-to-r from-yellow-600 to-orange-600 p-5 font-bold flex justify-between">
+                <span>🤖 AI Trip Planner</span>
+                <button onclick="document.getElementById('ai-window').classList.add('hidden')"><i class="fa fa-minus"></i></button>
+            </div>
+            <div id="chat-box" class="h-80 p-5 overflow-y-auto space-y-4 bg-black/40 text-sm">
+                <div class="bg-white/5 p-3 rounded-2xl border border-white/10">Namaste! Ask me for a "3 day plan" or "Historical tour" to begin your Odisha adventure.</div>
+            </div>
+            <div class="p-4 bg-white/5 border-t border-white/10 flex gap-2">
+                <input type="text" id="ai-input" placeholder="Plan a wildlife trip..." class="flex-grow bg-transparent outline-none text-sm">
+                <button onclick="askAI()" class="text-yellow-500 px-2"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <button onclick="document.getElementById('ai-window').classList.toggle('hidden')" class="w-16 h-16 bg-gradient-to-tr from-yellow-500 to-orange-600 rounded-2xl shadow-2xl flex items-center justify-center text-2xl text-black hover:rotate-12 transition">
+            <i class="fa-solid fa-sparkles"></i>
+        </button>
+    </div>
+
+    <script>
+        const destinations = [
+            { id:1, name: "Konark Sun Temple", type: "historical", rank: 1, lat: 19.8876, lon: 86.0945, budget: "₹₹", tag: "UNESCO Heritage", img: "https://images.unsplash.com/photo-1620668045952-19e99279092d?auto=format&fit=crop&w=600" },
+            { id:2, name: "Jagannath Temple", type: "spiritual", rank: 2, lat: 19.8135, lon: 85.8179, budget: "₹", tag: "Divine Soul", img: "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=600" },
+            { id:3, name: "Chilika Lagoon", type: "nature", rank: 3, lat: 19.6710, lon: 85.3180, budget: "₹₹", tag: "Dolphin Paradise", img: "https://images.unsplash.com/photo-1588613437203-d667c2692237?auto=format&fit=crop&w=600" },
+            { id:4, name: "Similipal Forest", type: "nature", rank: 4, lat: 21.9331, lon: 86.4172, budget: "₹₹₹", tag: "Tiger Reserve", img: "https://images.unsplash.com/photo-1589136109968-364e7c1f8876?auto=format&fit=crop&w=600" },
+            { id:5, name: "Udayagiri Caves", type: "historical", rank: 5, lat: 20.2631, lon: 85.7854, budget: "₹", tag: "Ancient Jainism", img: "https://images.unsplash.com/photo-1610483178766-8092d96033f3?auto=format&fit=crop&w=600" },
+            { id:6, name: "Lingaraj Temple", type: "spiritual", rank: 6, lat: 20.2382, lon: 85.8337, budget: "₹", tag: "Lord Shiva", img: "https://images.unsplash.com/photo-1590050752117-23a9d7fc217c?auto=format&fit=crop&w=600" },
+            { id:7, name: "Bhitarkanika", type: "nature", rank: 7, lat: 20.7381, lon: 86.8656, budget: "₹₹", tag: "Mangrove Safari", img: "https://images.unsplash.com/photo-1625239920199-a4198c600129?auto=format&fit=crop&w=600" },
+            { id:8, name: "Dhauli Stupa", type: "historical", rank: 8, lat: 20.1925, lon: 85.8394, budget: "₹", tag: "Peace Pagoda", img: "https://images.unsplash.com/photo-1622321458371-d8ecb104990f?auto=format&fit=crop&w=600" },
+            { id:9, name: "Raghurajpur Village", type: "cultural", rank: 9, lat: 19.8450, lon: 85.8300, budget: "₹", tag: "Heritage Art", img: "https://images.unsplash.com/photo-1582559930336-6e474510008d?auto=format&fit=crop&w=600" },
+            { id:10, name: "Hirakud Dam", type: "nature", rank: 10, lat: 21.5333, lon: 83.8667, budget: "₹", tag: "Sambalpur Pride", img: "https://images.unsplash.com/photo-1627838575034-7299097e88c0?auto=format&fit=crop&w=600" },
+            { id:11, name: "Gopalpur Beach", type: "nature", rank: 11, lat: 19.2600, lon: 84.9000, budget: "₹₹", tag: "Serene Sea", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600" },
+            { id:12, name: "Taptapani", type: "cultural", rank: 12, lat: 19.4833, lon: 84.3833, budget: "₹₹", tag: "Hot Springs", img: "https://images.unsplash.com/photo-1560155016-bd4879ae8f21?auto=format&fit=crop&w=600" },
+            { id:13, name: "Daringbadi", type: "nature", rank: 13, lat: 20.1300, lon: 84.1300, budget: "₹₹", tag: "Misty Hills", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600" },
+            { id:14, name: "Pipili Village", type: "cultural", rank: 14, lat: 20.1100, lon: 85.8300, budget: "₹", tag: "Applique Art", img: "https://images.unsplash.com/photo-1621360841013-c7683c659ec6?auto=format&fit=crop&w=600" },
+            { id:15, name: "Ratnagiri", type: "historical", rank: 15, lat: 20.6400, lon: 86.3300, budget: "₹₹", tag: "Buddhist Hub", img: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=600" },
+            { id:16, name: "Chandipur Beach", type: "nature", rank: 16, lat: 21.4700, lon: 87.0200, budget: "₹", tag: "Vanishing Sea", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600" },
+            { id:17, name: "Satkosia Gorge", type: "nature", rank: 17, lat: 20.5800, lon: 84.8500, budget: "₹₹₹", tag: "Canyon River", img: "https://images.unsplash.com/photo-1533630660534-11883377755b?auto=format&fit=crop&w=600" },
+            { id:18, name: "Mukteshvara", type: "spiritual", rank: 18, lat: 20.2425, lon: 85.8339, budget: "₹", tag: "Gem Architecture", img: "https://images.unsplash.com/photo-1628134781427-0ec962d35677?auto=format&fit=crop&w=600" },
+            { id:19, name: "Chausath Yogini", type: "historical", rank: 19, lat: 20.2450, lon: 85.8850, budget: "₹", tag: "Tantric Cult", img: "https://images.unsplash.com/photo-1566433331475-59755f521393?auto=format&fit=crop&w=600" },
+            { id:20, name: "Koraput Hills", type: "cultural", rank: 20, lat: 18.8140, lon: 82.7110, budget: "₹₹", tag: "Tribal Coffee", img: "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?auto=format&fit=crop&w=600" }
+        ];
+
+        let wishlist = JSON.parse(localStorage.getItem('odisha_wish')) || [];
+        let activeFilter = 'all';
+        let userPos = null;
+        let wishlistOnly = false;
+
+        function render() {
+            const grid = document.getElementById('dest-grid');
+            const searchQ = document.getElementById('search').value.toLowerCase();
+            
+            const filtered = destinations.filter(d => {
+                const sMatch = d.name.toLowerCase().includes(searchQ) || d.tag.toLowerCase().includes(searchQ);
+                const fMatch = activeFilter === 'all' || d.type === activeFilter;
+                const wMatch = !wishlistOnly || wishlist.includes(d.id);
+                return sMatch && fMatch && wMatch;
+            });
+
+            grid.innerHTML = filtered.map(d => {
+                const isFav = wishlist.includes(d.id) ? 'wish-active' : 'text-gray-600';
+                const dist = userPos ? `${calcDist(userPos.lat, userPos.lon, d.lat, d.lon)} KM` : '--';
+                
+                return `
+                <div class="dest-card glass flex flex-col group">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="${d.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                        <div class="absolute top-4 left-4 glass px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">${d.tag}</div>
+                        <div class="absolute top-4 right-4 h-10 w-10 glass rounded-full flex items-center justify-center font-black text-yellow-500 border border-yellow-500/30">#${d.rank}</div>
+                        <div class="absolute bottom-4 left-4">
+                            <h3 class="heading-font text-xl font-bold text-white">${d.name}</h3>
+                            <p class="text-[10px] text-yellow-500 font-bold uppercase tracking-widest"><i class="fa fa-location-arrow mr-1"></i> ${dist} away</p>
+                        </div>
+                    </div>
+                    <div class="p-6 mt-auto flex justify-between items-center border-t border-white/5">
+                        <span class="text-xl font-bold text-green-500">${d.budget}</span>
+                        <div class="flex gap-4">
+                            <i class="fa-solid fa-heart text-2xl cursor-pointer transition ${isFav}" onclick="toggleWish(${d.id})"></i>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}" target="_blank" class="text-white hover:text-yellow-500 transition text-2xl"><i class="fa-solid fa-diamond-turn-right"></i></a>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleWish(id) {
+            if(wishlist.includes(id)) wishlist = wishlist.filter(x => x !== id);
+            else wishlist.push(id);
+            localStorage.setItem('odisha_wish', JSON.stringify(wishlist));
+            render();
+        }
+
+        function toggleWishlistOnly() {
+            wishlistOnly = !wishlistOnly;
+            document.getElementById('wishBtn').classList.toggle('bg-red-500');
+            render();
+        }
+
+        function setFilter(type, btn) {
+            activeFilter = type;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            render();
+        }
+
+        function calcDist(la1, lo1, la2, lo2) {
+            const R = 6371;
+            const dLat = (la2-la1)*Math.PI/180;
+            const dLon = (lo2-lo1)*Math.PI/180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLon/2)**2;
+            return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(0);
+        }
+
+        function syncGPS() {
+            navigator.geolocation.getCurrentPosition(p => {
+                userPos = { lat: p.coords.latitude, lon: p.coords.longitude };
+                document.getElementById('gps-status').innerText = "Location Live: Distances Updated";
+                render();
+            });
+        }
+
+        function convert(mode) {
+            const r = 83.5;
+            if(mode === 1) document.getElementById('inr').value = (document.getElementById('usd').value * r).toFixed(2);
+            else document.getElementById('usd').value = (document.getElementById('inr').value / r).toFixed(2);
+        }
+
+        function askAI() {
+            const val = document.getElementById('ai-input').value.toLowerCase();
+            const box = document.getElementById('chat-box');
+            let res = "Sounds like a plan! I recommend starting with the Golden Triangle circuit.";
+            if(val.includes("3 day")) res = "📍 **3-Day Itinerary:** Day 1: Heritage in Bhubaneswar (Lingaraj, Dhauli). Day 2: Konark Sun Temple & Puri Beach. Day 3: Chilika Lagoon Cruise.";
+            if(val.includes("nature")) res = "🌿 **Nature Route:** Similipal Tiger Reserve ➔ Bhitarkanika Mangroves ➔ Daringbadi Hills.";
+            
+            box.innerHTML += `<div class="text-right"><span class="bg-yellow-500 text-black px-3 py-2 rounded-2xl rounded-tr-none inline-block font-bold">${val}</span></div>`;
+            box.innerHTML += `<div><span class="bg-white/10 p-3 rounded-2xl rounded-tl-none inline-block border border-white/10">${res}</span></div>`;
+            document.getElementById('ai-input').value = "";
+            box.scrollTop = box.scrollHeight;
+        }
+
+        window.onload = () => { render(); syncGPS(); };
+    </script>
+</body>
+</html>
